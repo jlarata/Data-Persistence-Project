@@ -11,17 +11,28 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text HighScoreText;
+    public string PlayerName;
+    public string HighScorePlayerName;
+
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
-    
+    private int HighScoreToBeat;
+
+
     private bool m_GameOver = false;
 
     
     // Start is called before the first frame update
     void Start()
     {
+        PlayerName = GeneralMainManager.Instance.PlayerName;
+        HighScorePlayerName = GeneralMainManager.Instance.HighScorePlayerName;
+        HighScoreToBeat = GeneralMainManager.Instance.HighScore;
+        HighScoreText.text = $"Best Score : {HighScorePlayerName} ({HighScoreToBeat})";
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -33,7 +44,7 @@ public class MainManager : MonoBehaviour
                 Vector3 position = new Vector3(-1.5f + step * x, 2.5f + i * 0.3f, 0);
                 var brick = Instantiate(BrickPrefab, position, Quaternion.identity);
                 brick.PointValue = pointCountArray[i];
-                brick.onDestroyed.AddListener(AddPoint);
+                brick.onDestroyed.AddListener(AddPoint);                
             }
         }
     }
@@ -65,12 +76,31 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = $"Score {PlayerName}: {m_Points}";
+    }
+
+    void AddHighScore()
+    {
+
+        
+        
+        if(m_Points >= HighScoreToBeat)
+        {
+            HighScoreText.text = $"Best Score : {PlayerName} ({m_Points})";
+
+            GeneralMainManager.Instance.HighScorePlayerName = PlayerName;
+            GeneralMainManager.Instance.HighScore = m_Points;
+
+            GeneralMainManager.Instance.SaveHighScore();
+        }
+        
+        
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        AddHighScore();
     }
 }
